@@ -1,0 +1,73 @@
+datasource db {
+    provider     = "postgresql"
+    relationMode = "prisma"
+    url          = env("DATABASE_URL")
+    directUrl    = env("DIRECT_URL")
+}
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+// USER -- Most of data comes from supabase auth
+model User {
+    id String @id @default(uuid())
+
+    teams Team[]
+}
+
+// TEAM
+enum TeamType {
+    PERSONAL
+    PRO
+}
+
+model Team {
+    id        String   @id @default(uuid())
+    handle    String
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now())
+    ownerId   String
+
+    name  String
+    image String   @default("")
+    type  TeamType
+
+    members User[]
+    servers Server[]
+    Script  Script[]
+}
+
+// SERVER
+model Server {
+    id        String   @id @default(uuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now())
+
+    team   Team   @relation(fields: [teamId], references: [id])
+    teamId String
+
+    configured Boolean @default(false)
+    name       String  @default("")
+    user       String  @default("")
+    url        String  @default("")
+    status     Boolean @default(false)
+    ip         String
+}
+
+// SCRIPTS
+model Script {
+    id        String   @id @default(uuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now())
+
+    team   Team   @relation(fields: [teamId], references: [id])
+    teamId String
+
+    name       String
+    icon       String
+    handle     String
+    parameters String @db.Text()
+    type       String
+    data       String @db.Text()
+}
